@@ -1,1 +1,1 @@
-# pub-hf-client-p5
+# pub-hf-product-p5
