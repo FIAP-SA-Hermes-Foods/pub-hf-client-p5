@@ -14,17 +14,13 @@ type Application interface {
 }
 
 type application struct {
-	ctx           context.Context
+	ctx          context.Context
 	clientBroker broker.ClientBroker
-}
-
-func (app *application) setMessageIDCtx(msgID string) {
-	// implementation of setMessageIDCtx
 }
 
 func NewApplication(ctx context.Context, clientBroker broker.ClientBroker) Application {
 	return application{
-		ctx:           ctx,
+		ctx:          ctx,
 		clientBroker: clientBroker,
 	}
 }
@@ -52,13 +48,14 @@ func (app application) SaveClient(msgID string, client dto.RequestClient) error 
 	l.Infof(msgID, "SaveClientApp: ", " | ", ps.MarshalString(client))
 
 	inputBroker := dto.ClientBroker{
-		UUID:          		client.UUID,
-		Name:      	   		client.Name,
-		CPF:           		client.CPF,
-		Email:   	   		client.Email,
-		PhoneNumber:        client.PhoneNumber,
-		Address:       		client.Address,
-		CreatedAt:     		client.CreatedAt,
+		UUID:        client.UUID,
+		MessageID:   msgID,
+		Name:        client.Name,
+		CPF:         client.CPF,
+		Email:       client.Email,
+		PhoneNumber: client.PhoneNumber,
+		Address:     client.Address,
+		CreatedAt:   client.CreatedAt,
 	}
 
 	if err := app.clientBroker.SaveClient(inputBroker); err != nil {
@@ -68,4 +65,14 @@ func (app application) SaveClient(msgID string, client dto.RequestClient) error 
 
 	l.Infof(msgID, "SaveClientApp output: ", " | ", "message sent with success!")
 	return nil
+}
+
+type contextKey string
+
+func (app *application) setMessageIDCtx(msgID string) {
+	if app.ctx == nil {
+		app.ctx = context.WithValue(context.Background(), contextKey("messageID"), msgID)
+		return
+	}
+	app.ctx = context.WithValue(app.ctx, contextKey("messageID"), msgID)
 }
